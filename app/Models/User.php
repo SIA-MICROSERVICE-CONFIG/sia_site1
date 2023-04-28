@@ -4,10 +4,11 @@
     use Illuminate\Database\Eloquent\Model;
 
     class User extends Model{
-        protected $table = 'sia_site1';
+        protected $table = 'tbluser';
         protected $fillable = [
             'username','password'
         ];
 
         public $timestamps = false;
+        protected $primaryKey = 'userid';
     }
