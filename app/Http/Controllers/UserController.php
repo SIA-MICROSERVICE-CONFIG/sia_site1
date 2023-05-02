@@ -52,33 +52,4 @@ Class UserController extends Controller {
             return $this->errorResponse('User ID Does Not Exists', Response::HTTP_NOT_FOUND);
         }
     }
-
-    public function update(Request $request, $id) { 
-
-        $rules = [
-            'username' => 'required|max:20',
-            'password' => 'required|max:20'
-        ];
-    
-        $this->validate($request, $rules);
-    
-        $user = User::findOrFail($id);
-    
-        $user->fill($request->all());
-    
-        if ($user->isClean()) {
-            return Response()->json("At least one value must change", Response::HTTP_UNPROCESSABLE_ENTITY);
-        } else {
-            $user->save();
-            return $this->successResponse($user);
-        }
-    }
-
-    public function delete($id) { 
-
-        $user = User::findOrFail($id);
-        $user->delete();
-    
-        return $this->successResponse($user);
-    }
 }
