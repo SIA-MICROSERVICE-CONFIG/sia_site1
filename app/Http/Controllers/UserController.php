@@ -1,55 +1,99 @@
 <?php
 
+
 namespace App\Http\Controllers;
+
+use App\Models\User;
+use App\Models\UserJob;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use App\Models\User;
 use App\Traits\ApiResponser;
-use DB;
 
-Class UserController extends Controller {
+class UserController extends Controller
+{
     use ApiResponser;
-    
+
     private $request;
-    public function __construct(Request $request)
-    {
+
+    public $timestamps = false;
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct(Request $request){
         $this->request = $request;
     }
-    public function getUsers(){    
-
-        $users = DB::connection('mysql')    
-        ->select("Select * from tbluser");
-        return $this->successResponse($users);
+    
+    public function showUsers(){
+        $users = User::all();
+        return $this -> successResponse(User::all());
     }
 
-    public function index(){
+    public function showUser($id){
+        $user = User::findOrFail($id);
+        return $this->successResponse($user);
+    }
 
-        $users = User::all();
-        return $this->successResponse($users);
-    }   
-
-    public function add(Request $request){
-        
+    public function addUser(Request $request){
         $rules = [
             'username' => 'required|max:20',
             'password' => 'required|max:20',
+            'gender' => 'required|in:Male,Female',
+            // 'jobid' => 'required|numeric|min:1|not_in:0'
         ];
 
-        $this->validate($request,$rules);
+        $validate = $this->validate($request, $rules);
 
         $user = User::create($request->all());
+        // $userjob = UserJob::findOrFail($request->jobid);
+
         return $this->successResponse($user, Response::HTTP_CREATED);
+    }   
+        
+    //  if ($validate){
+    //         $user = User::create($request->all());
+
+    //         return $this->successResponse($user, 201);
+    //     }
+    //     else{
+    //         return $this->ErrorResponse("Operation Cannot be done.", 
+    //         Response::HTTP_UNPROCESSABLE_ENTITY);
+    //     }
+    // }
+
+    public function updateUser(Request $request, $id){
+        $rules = [
+            'username' => 'required|max:20',
+            'password' => 'required|max:20',
+            'gender' => 'required|in:Male,Female',
+            // 'jobid' => 'required|numeric|min:1|not_in:0'
+        ];
+
+        $validate = $this->validate($request, $rules);
+
+        // $userjob = UserJob::findOrFail($request->jobid);
+
+        if ($validate){
+
+            $user = User::findOrFail($id);
+            $user->fill($request->all());
+
+            if ($user->isClean()) {
+                return $this-> ErrorResponse("At least one value must change.", 
+                Response::HTTP_UNPROCESSABLE_ENTITY);
+            } else {
+                $user->save();
+                return $this->successResponse($user);
+            }
+        }
     }
 
-    public function show($id){
+    public function deleteUser($id){ 
+        $user = User::findOrFail($id);
+        $user->delete();
         
-        $user = User::where('userid', $id)->first();
-        if($user){
-            return $this->successResponse($user);
-        }
-        {
-            return $this->errorResponse('User ID Does Not Exists', Response::HTTP_NOT_FOUND);
-        }
+        return $this->successResponse($user);
     }
 }
